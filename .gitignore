@@ -1,2 +1,5 @@
 # Ignore Vagrant cache files
 /.vagrant/
+
+# Ignore Ansible retry files
+/plays/*.retry
