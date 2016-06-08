@@ -1,0 +1,8 @@
+---
+- hosts: all
+  connection: local
+  become: yes
+  become_user: root
+  tasks:
+    - name: configure gitlab ci multi runner
+      shell: gitlab-ci-multi-runner register --non-interactive --name git-vm --url http://{{ gitlab_url }}/ci --registration-token {{ registration_token }} --executor shell --shell bash
