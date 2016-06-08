@@ -1,0 +1,33 @@
+---
+- hosts: all
+  connection: local
+  become: yes
+  become_user: root
+  tasks:
+    - name: ensure dependencies are installed
+      apt: name={{ item }} state=present
+      with_items:
+        - git
+
+    - name: ensure git repo is cloned
+      git: repo=https://github.com/ContainerSolutions/gapp.git dest=/home/vagrant/gapp
+
+    - name: ensure app folder has proper permissions
+      file: dest=/home/vagrant/gapp owner=vagrant group=vagrant
+
+    - name: ensure upstart script is present
+      copy: src=files/gapp.conf dest=/etc/init/gapp.conf owner=root group=root
+
+    - name: ensure upstart script is enabled
+      file: src=/etc/init/gapp.conf dest=/etc/init.d/gapp state=link
+
+    - name: ensure app is built
+      command: make build chdir=/home/vagrant/gapp creates=/home/vagrant/gapp/bin/app
+
+    - name: run app tests
+      command: make test chdir=/home/vagrant/gapp
+      register: tests
+
+    - name: ensure app is running
+      service: name=gapp state=started
+      when: tests.rc == 0
